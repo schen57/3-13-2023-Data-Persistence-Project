@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEditor;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -14,13 +15,43 @@ public class MainManager : MonoBehaviour
     public Text ScoreText;
     public GameObject GameOverText;
     public Text BestScoreText;
+    private int bestScore;
+    public string bestScorePlayerName;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
 
-    
+    [System.Serializable]
+    class SaveData
+    {
+        public int highScore;
+        public string highScorePlayerName;
+    }
+
+    public void SaveHighScore()
+    {
+        SaveData data = new SaveData();
+        data.highScore = bestScore;
+        data.highScorePlayerName = bestScorePlayerName;
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void LoadHighScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+            bestScore = data.highScore;
+            bestScorePlayerName = data.highScorePlayerName;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -39,6 +70,10 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        //read best score
+        LoadHighScore();
+        UpdateHighScore();
     }
 
     private void Update()
@@ -62,6 +97,14 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+        }
+
+        if (bestScore <= m_Points)
+        {
+            bestScore = m_Points;
+            bestScorePlayerName = MenuUIHandler.Instance.playerName;
+            UpdateHighScore();
+            SaveHighScore();
         }
     }
 
@@ -87,10 +130,17 @@ public class MainManager : MonoBehaviour
     {
         if (MenuUIHandler.Instance.playerName != null)
         {
-            BestScoreText.text = "Best Score: " + MenuUIHandler.Instance.playerName + " 0";
+            UpdateHighScore();
         }
         
     }
+
+    public void UpdateHighScore()
+    {
+        BestScoreText.text = "Best Score: " + bestScorePlayerName +" "+ bestScore;
+    }
+
+    
 
     
 }
