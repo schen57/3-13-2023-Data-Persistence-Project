@@ -79,6 +79,7 @@ public class MainManager : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
+        MenuUIHandler.Instance = null;
         SceneManager.LoadScene(1);
     }
 

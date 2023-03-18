@@ -34,8 +34,10 @@ public class MenuUIHandler : MonoBehaviour
 
     public void StartNew()
     {
+        
         NewPlayerName(nameInput.text); // set playerName with the text from the input field
         Debug.Log("Player name: " + nameInput.text); // log the player name to the console for debugging purposes
+        nameInput.text = ""; // This clears the input
         SceneManager.LoadScene(0);
 
 
